@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="ht">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tap Tap Rush Haiti Pro</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap');
+
+    :root {
+      --haiti-blue: #00209f;
+      --haiti-red: #d21034;
+      --gold: #ffd54a;
+      --deep: #071226;
+      --card: rgba(255,255,255,0.08);
+      --line: rgba(255,255,255,0.16);
+      --text: #ffffff;
+      --muted: rgba(255,255,255,0.72);
+      --road: #32363f;
+      --road-line: #f3f0d0;
+      --grass: #2f7d32;
+      --sky1: #174ea6;
+      --sky2: #9ed3ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: radial-gradient(circle at top, #0d2b65 0%, #071226 55%, #02060d 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      transition: opacity .35s ease;
+      z-index: 5;
+      background: linear-gradient(180deg, rgba(3,10,20,.3), rgba(3,10,20,.65));
+      backdrop-filter: blur(2px);
+    }
+
+    .hidden { opacity: 0; pointer-events: none; }
+
+    #landing {
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255,213,74,.12), transparent 20%),
+        radial-gradient(circle at 80% 10%, rgba(210,16,52,.2), transparent 24%),
+        linear-gradient(160deg, #123b91 0%, #0b1630 45%, #320711 100%);
+    }
+
+    .title-flag {
+      font-size: clamp(2rem, 4vw, 3.5rem);
+      margin-bottom: 8px;
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,.4));
+    }
+
+    .game-title {
+      font-family: 'Bebas Neue', cursive;
+      font-size: clamp(3.8rem, 9vw, 8rem);
+      line-height: .9;
+      letter-spacing: 4px;
+      text-align: center;
+      text-shadow: 0 0 40px rgba(255,213,74,.25), 0 8px 0 rgba(0,0,0,.25);
+    }
+
+    .tagline {
+      margin-top: 12px;
+      margin-bottom: 28px;
+      color: var(--gold);
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: min(90vw, 360px);
+    }
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 15px 20px;
+      font-weight: 800;
+      letter-spacing: 1.2px;
+      cursor: pointer;
+      transition: transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+      box-shadow: 0 12px 30px rgba(0,0,0,.28);
+    }
+
+    .btn:hover { transform: translateY(-2px) scale(1.02); }
+    .btn:active { transform: scale(.98); }
+
+    .btn-primary { background: linear-gradient(135deg, var(--haiti-red), #ff4c5a); color: #fff; }
+    .btn-secondary { background: linear-gradient(135deg, var(--haiti-blue), #2b6dff); color: #fff; }
+    .btn-dark { background: linear-gradient(135deg, #0b1527, #17263d); color: #fff; border: 1px solid rgba(255,255,255,.12); }
+
+    .panel {
+      width: min(960px, 94vw);
+      background: rgba(7, 18, 38, .82);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: 0 30px 70px rgba(0,0,0,.35);
+      padding: 26px;
+      backdrop-filter: blur(12px);
+    }
+
+    .panel-title {
+      font-family: 'Bebas Neue', cursive;
+      font-size: clamp(2rem, 4vw, 3rem);
+      color: var(--gold);
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+    }
+
+    .panel-subtitle {
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      margin: 20px 0 12px;
+      font-weight: 800;
+      color: var(--gold);
+      letter-spacing: 1px;
+    }
+
+    .option-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 14px;
+    }
+
+    .option-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 16px;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .option-card:hover,
+    .option-card.active {
+      transform: translateY(-3px);
+      border-color: rgba(255,213,74,.85);
+      background: rgba(255,213,74,.12);
+    }
+
+    .car-preview {
+      height: 70px;
+      border-radius: 16px;
+      position: relative;
+      margin-bottom: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.1);
+      background: linear-gradient(180deg, #9fd7ff, #d5f0ff 38%, #70757f 39%, #31353f 100%);
+    }
+
+    .car-shape {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      bottom: 16px;
+      height: 22px;
+      border-radius: 18px 22px 10px 10px;
+      box-shadow: inset 0 -4px 0 rgba(0,0,0,.18);
+    }
+
+    .car-shape::before {
+      content: '';
+      position: absolute;
+      left: 20%;
+      top: -10px;
+      width: 40%;
+      height: 14px;
+      border-radius: 14px 14px 0 0;
+      background: rgba(255,255,255,.28);
+    }
+
+    .wheel, .wheel2 {
+      position: absolute;
+      bottom: -7px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #151515;
+      border: 3px solid #666;
+    }
+
+    .wheel { left: 18%; }
+    .wheel2 { right: 18%; }
+
+    .color-swatches {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .swatch {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 3px solid rgba(255,255,255,.2);
+      cursor: pointer;
+      transition: transform .15s ease, border-color .15s ease;
+    }
+
+    .swatch.active {
+      border-color: var(--gold);
+      transform: scale(1.08);
+      box-shadow: 0 0 0 4px rgba(255,213,74,.18);
+    }
+
+    .action-row {
+      margin-top: 24px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    #hud {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    #hud.hidden { display: none; }
+
+    .hud-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 20px;
+      align-items: flex-start;
+    }
+
+    .hud-box {
+      min-width: 120px;
+      background: rgba(7,18,38,.72);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 12px 16px;
+      box-shadow: 0 16px 30px rgba(0,0,0,.22);
+      backdrop-filter: blur(10px);
+    }
+
+    .hud-label {
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: 1.8px;
+      color: rgba(255,255,255,.64);
+      font-weight: 800;
+    }
+
+    .hud-value {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 2rem;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+
+    .hud-center-badge {
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(7,18,38,.82);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 8px 16px;
+      color: var(--gold);
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    .hud-bottom {
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+    }
+
+    .fuel-wrap {
+      width: min(240px, 46vw);
+      background: rgba(7,18,38,.72);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .fuel-track {
+      margin-top: 7px;
+      height: 12px;
+      background: rgba(255,255,255,.1);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .fuel-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #00c853, #b2ff59);
+      border-radius: inherit;
+      transition: width .18s ease;
+    }
+
+    .pause-btn {
+      pointer-events: auto;
+      border: 1px solid var(--line);
+      background: rgba(7,18,38,.82);
+      color: #fff;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .modal {
+      width: min(460px, 92vw);
+      background: rgba(7,18,38,.92);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.42);
+      text-align: center;
+    }
+
+    .modal h2 {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 3rem;
+      color: var(--gold);
+      letter-spacing: 3px;
+      margin-bottom: 10px;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 18px 0 22px;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .stat-number {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 2rem;
+      color: var(--gold);
+    }
+
+    .stat-label { color: var(--muted); font-size: .8rem; }
+
+    .nav-back {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      border: 1px solid var(--line);
+      background: rgba(7,18,38,.82);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .info-text {
+      line-height: 1.7;
+      color: rgba(255,255,255,.9);
+    }
+
+    .loading-bar {
+      width: min(320px, 80vw);
+      height: 7px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.14);
+      overflow: hidden;
+      margin-top: 14px;
+    }
+
+    .loading-fill {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, var(--haiti-blue), var(--haiti-red), var(--gold));
+      animation: load 1.6s ease forwards;
+      transform-origin: left;
+    }
+
+    @keyframes load {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      top: 36%;
+      transform: translate(-50%, -50%) scale(.85);
+      background: linear-gradient(135deg, var(--haiti-red), #ff8a00);
+      color: white;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-family: 'Bebas Neue', cursive;
+      font-size: 2rem;
+      letter-spacing: 2px;
+      box-shadow: 0 16px 36px rgba(0,0,0,.3);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9;
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .tiny-note {
+      margin-top: 12px;
+      color: rgba(255,255,255,.55);
+      font-size: .85rem;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .hud-top { padding: 14px; }
+      .hud-bottom { left: 14px; right: 14px; }
+      .hud-value { font-size: 1.6rem; }
+      .panel { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+
+  <div class="screen" id="loading-screen">
+    <div class="title-flag">🇭🇹</div>
+    <div class="game-title" style="font-size:clamp(2.6rem,6vw,4rem)">Tap Tap Rush Haiti Pro</div>
+    <div class="tagline">Chargement jwèt la...</div>
+    <div class="loading-bar"><div class="loading-fill"></div></div>
+  </div>
+
+  <div class="screen hidden" id="landing-screen">
+    <div class="title-flag">🇭🇹</div>
+    <div class="game-title">Tap Tap Rush<br>Haiti Pro</div>
+    <div class="tagline">Chwazi super machin ou, kouri nan lari Ayiti</div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="play-btn">Jwe Kounye a</button>
+      <button class="btn btn-secondary" id="garage-btn">Garage & Machin</button>
+      <button class="btn btn-dark" id="about-btn">About jwèt la</button>
+    </div>
+  </div>
+
+  <div class="screen hidden" id="garage-screen">
+    <button class="nav-back" data-back="landing-screen">← Retounen</button>
+    <div class="panel">
+      <div class="panel-title">Garage Pro</div>
+      <div class="panel-subtitle">Mwen ranplase ansyen sistèm bus style la pa vrè seleksyon machin ak koulè, epi mete dekor Ayiti pou li bay plis sans pwofesyonèl.</div>
+
+      <div class="section-title">Machin</div>
+      <div class="option-grid" id="car-grid"></div>
+
+      <div class="section-title">Koulè</div>
+      <div class="color-swatches" id="color-swatches"></div>
+
+      <div class="section-title">Anbyans Ayiti</div>
+      <div class="option-grid" id="env-grid">
+        <div class="option-card active" data-env="pap">
+          <strong>Port-au-Prince</strong>
+          <div style="color:var(--muted); font-size:.85rem; margin-top:6px;">Tap-tap, mache, mural, drapo, lari vil la</div>
+        </div>
+        <div class="option-card" data-env="petion">
+          <strong>Pétion-Ville</strong>
+          <div style="color:var(--muted); font-size:.85rem; margin-top:6px;">Zòn modèn, limyè vil, palmis ak bèl wout</div>
+        </div>
+        <div class="option-card" data-env="jacmel">
+          <strong>Jacmel</strong>
+          <div style="color:var(--muted); font-size:.85rem; margin-top:6px;">Style atistik, bò lanmè, kay koulè ak festival</div>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="btn btn-primary" id="save-play-btn">Sove & Jwe</button>
+        <button class="btn btn-dark" data-back="landing-screen">Anile</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen hidden" id="about-screen">
+    <button class="nav-back" data-back="landing-screen">← Retounen</button>
+    <div class="panel" style="max-width:800px;">
+      <div class="panel-title">Tap Tap Rush Haiti Pro</div>
+      <p class="info-text">
+        Vèsyon sa a sèvi ak yon prezantasyon pi pwòp, yon garage ak seleksyon machin reyèl, plis dekorasyon ki sonje Ayiti: palmis, drapo, kay koulè, ti mache bò lari, tap-tap, ak pano kreyòl. Li fèt pou bay yon santiman arcade pwofesyonèl pandan li kenbe idantite ayisyèn nan.
+      </p>
+      <p class="info-text" style="margin-top:14px;">
+        Ou ka chwazi Ferrari, Dodge, oswa Porsche, chanje koulè machin nan, epi jwe sou wout ki gen anbyans Port-au-Prince, Pétion-Ville, oswa Jacmel.
+      </p>
+    </div>
+  </div>
+
+  <div id="hud" class="hidden">
+    <div class="hud-top">
+      <div class="hud-box">
+        <div class="hud-label">Pyès</div>
+        <div class="hud-value" id="coins-ui">0</div>
+      </div>
+      <button class="pause-btn" id="pause-btn">⏸</button>
+      <div class="hud-box">
+        <div class="hud-label">Distans</div>
+        <div class="hud-value" id="distance-ui">0m</div>
+      </div>
+    </div>
+    <div class="hud-center-badge" id="car-name-badge">Ferrari</div>
+    <div class="hud-bottom">
+      <div class="fuel-wrap">
+        <div class="hud-label">Fuel</div>
+        <div class="fuel-track"><div class="fuel-fill" id="fuel-ui"></div></div>
+      </div>
+      <div class="hud-box">
+        <div class="hud-label">Vitès</div>
+        <div class="hud-value" id="speed-ui">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">BOOST</div>
+
+  <div class="screen hidden" id="pause-screen">
+    <div class="modal">
+      <h2>PAUSE</h2>
+      <div class="action-row" style="justify-content:center;">
+        <button class="btn btn-primary" id="resume-btn">Kontinye</button>
+        <button class="btn btn-dark" id="restart-btn">Rekòmanse</button>
+        <button class="btn btn-secondary" id="quit-btn">Main Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen hidden" id="gameover-screen">
+    <div class="modal">
+      <h2>GAME OVER</h2>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-number" id="go-distance">0</div><div class="stat-label">Mèt</div></div>
+        <div class="stat-card"><div class="stat-number" id="go-coins">0</div><div class="stat-label">Pyès</div></div>
+        <div class="stat-card"><div class="stat-number" id="go-score">0</div><div class="stat-label">Score</div></div>
+        <div class="stat-card"><div class="stat-number" id="go-best">0</div><div class="stat-label">Best</div></div>
+      </div>
+      <div class="action-row" style="justify-content:center;">
+        <button class="btn btn-primary" id="again-btn">Jwe Ankò</button>
+        <button class="btn btn-secondary" id="menu-btn">Main Menu</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x8bc8ff, 45, 180);
+    const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 400);
+
+    const STATE = {
+      running: false,
+      paused: false,
+      over: false,
+      coins: 0,
+      distance: 0,
+      speed: 10,
+      fuel: 100,
+      lane: 1,
+      targetX: 0,
+      selectedCar: 'ferrari',
+      selectedColor: '#e11d48',
+      environment: 'pap',
+      best: Number(localStorage.getItem('ttrh_pro_best') || 0)
+    };
+
+    const lanePositions = [-4.5, -1.5, 1.5, 4.5];
+
+    const CAR_MODELS = {
+      ferrari: {
+        name: 'Ferrari',
+        bodyScale: { x: 2.1, y: 0.75, z: 4.5 },
+        roofScale: { x: 1.5, y: 0.55, z: 1.9 },
+        wheelRadius: 0.42,
+        defaultColors: ['#e11d48', '#f59e0b', '#ef4444', '#111827']
+      },
+      dodge: {
+        name: 'Dodge',
+        bodyScale: { x: 2.35, y: 0.88, z: 4.9 },
+        roofScale: { x: 1.6, y: 0.6, z: 2.0 },
+        wheelRadius: 0.46,
+        defaultColors: ['#dc2626', '#1d4ed8', '#eab308', '#374151']
+      },
+      porsche: {
+        name: 'Porsche',
+        bodyScale: { x: 2.0, y: 0.72, z: 4.2 },
+        roofScale: { x: 1.45, y: 0.48, z: 1.8 },
+        wheelRadius: 0.4,
+        defaultColors: ['#f97316', '#ffffff', '#22c55e', '#7c3aed']
+      }
+    };
+
+    const ui = {
+      loading: document.getElementById('loading-screen'),
+      landing: document.getElementById('landing-screen'),
+      garage: document.getElementById('garage-screen'),
+      about: document.getElementById('about-screen'),
+      hud: document.getElementById('hud'),
+      pause: document.getElementById('pause-screen'),
+      over: document.getElementById('gameover-screen'),
+      toast: document.getElementById('toast')
+    };
+
+    function showScreen(id) {
+      [ui.loading, ui.landing, ui.garage, ui.about, ui.pause, ui.over].forEach(el => el.classList.add('hidden'));
+      if (id) document.getElementById(id).classList.remove('hidden');
+    }
+
+    setTimeout(() => showScreen('landing-screen'), 1500);
+
+    const carGrid = document.getElementById('car-grid');
+    const colorSwatches = document.getElementById('color-swatches');
+
+    function renderGarage() {
+      carGrid.innerHTML = '';
+      Object.entries(CAR_MODELS).forEach(([key, model]) => {
+        const card = document.createElement('div');
+        card.className = 'option-card' + (STATE.selectedCar === key ? ' active' : '');
+        card.dataset.car = key;
+        const previewColor = model.defaultColors[0];
+        card.innerHTML = `
+          <div class="car-preview">
+            <div class="car-shape" style="background:${previewColor}">
+              <div class="wheel"></div>
+              <div class="wheel2"></div>
+            </div>
+          </div>
+          <strong>${model.name}</strong>
+          <div style="color:var(--muted); font-size:.85rem; margin-top:6px;">Supercar style pou jwèt la</div>
+        `;
+        card.onclick = () => {
+          STATE.selectedCar = key;
+          STATE.selectedColor = CAR_MODELS[key].defaultColors[0];
+          renderGarage();
+        };
+        carGrid.appendChild(card);
+      });
+
+      colorSwatches.innerHTML = '';
+      CAR_MODELS[STATE.selectedCar].defaultColors.forEach(color => {
+        const sw = document.createElement('button');
+        sw.className = 'swatch' + (STATE.selectedColor === color ? ' active' : '');
+        sw.style.background = color;
+        sw.onclick = () => {
+          STATE.selectedColor = color;
+          renderGarage();
+        };
+        colorSwatches.appendChild(sw);
+      });
+
+      document.querySelectorAll('[data-env]').forEach(card => {
+        card.classList.toggle('active', card.dataset.env === STATE.environment);
+        card.onclick = () => {
+          STATE.environment = card.dataset.env;
+          renderGarage();
+        };
+      });
+    }
+
+    renderGarage();
+
+    const ambient = new THREE.AmbientLight(0xffffff, 1.05);
+    scene.add(ambient);
+    const sun = new THREE.DirectionalLight(0xffffff, 1.1);
+    sun.position.set(12, 24, 4);
+    sun.castShadow = true;
+    scene.add(sun);
+
+    let world = new THREE.Group();
+    scene.add(world);
+
+    function clearWorld() {
+      while (world.children.length) {
+        const child = world.children[0];
+        world.remove(child);
+      }
+    }
+
+    let roadPieces = [];
+    let decoObjects = [];
+    let obstacles = [];
+    let coins = [];
+    let playerCar = null;
+
+    function buildWorld() {
+      clearWorld();
+      roadPieces = [];
+      decoObjects = [];
+      obstacles = [];
+      coins = [];
+
+      const envMap = {
+        pap: { sky: 0x8bc8ff, ground: 0x4e8f3f, decoTint: 0xd21034 },
+        petion: { sky: 0xa3d8ff, ground: 0x3d8b55, decoTint: 0x00209f },
+        jacmel: { sky: 0x9fe3ff, ground: 0x5e9b4f, decoTint: 0xf97316 }
+      };
+
+      const env = envMap[STATE.environment];
+      scene.background = new THREE.Color(env.sky);
+      scene.fog.color = new THREE.Color(env.sky);
+
+      const ground = new THREE.Mesh(
+        new THREE.PlaneGeometry(220, 900),
+        new THREE.MeshLambertMaterial({ color: env.ground })
+      );
+      ground.rotation.x = -Math.PI / 2;
+      ground.receiveShadow = true;
+      world.add(ground);
+
+      for (let i = 0; i < 12; i++) {
+        const road = new THREE.Mesh(
+          new THREE.BoxGeometry(14, 0.1, 40),
+          new THREE.MeshLambertMaterial({ color: 0x31353f })
+        );
+        road.position.set(0, 0.05, -i * 40 + 20);
+        road.receiveShadow = true;
+        world.add(road);
+        roadPieces.push(road);
+
+        for (let lane = -1; lane <= 1; lane++) {
+          for (let j = 0; j < 4; j++) {
+            const line = new THREE.Mesh(
+              new THREE.BoxGeometry(0.18, 0.11, 3),
+              new THREE.MeshLambertMaterial({ color: 0xf3f0d0 })
+            );
+            line.position.set(lane * 3, 0.11, road.position.z - 15 + j * 10);
+            world.add(line);
+            roadPieces.push(line);
+          }
+        }
+      }
+
+      for (let i = 0; i < 28; i++) {
+        const z = -i * 18;
+        spawnDecor(z, env.decoTint);
+      }
+
+      buildPlayerCar();
+    }
+
+    function buildPlayerCar() {
+      if (playerCar) world.remove(playerCar);
+
+      const model = CAR_MODELS[STATE.selectedCar];
+      const color = new THREE.Color(STATE.selectedColor);
+      const group = new THREE.Group();
+
+      const body = new THREE.Mesh(
+        new THREE.BoxGeometry(model.bodyScale.x, model.bodyScale.y, model.bodyScale.z),
+        new THREE.MeshPhongMaterial({ color, shininess: 80 })
+      );
+      body.position.y = 0.8;
+      body.castShadow = true;
+      group.add(body);
+
+      const roof = new THREE.Mesh(
+        new THREE.BoxGeometry(model.roofScale.x, model.roofScale.y, model.roofScale.z),
+        new THREE.MeshPhongMaterial({ color: 0xdbeafe, transparent: true, opacity: 0.75, shininess: 100 })
+      );
+      roof.position.set(0, 1.25, -0.2);
+      group.add(roof);
+
+      const front = new THREE.Mesh(
+        new THREE.BoxGeometry(model.bodyScale.x * 0.9, .15, .18),
+        new THREE.MeshLambertMaterial({ color: 0x111827 })
+      );
+      front.position.set(0, 0.6, model.bodyScale.z / 2 + 0.05);
+      group.add(front);
+
+      const headlightMat = new THREE.MeshLambertMaterial({ color: 0xfff7b2, emissive: 0xfff7b2, emissiveIntensity: .8 });
+      [-0.55, 0.55].forEach(x => {
+        const h = new THREE.Mesh(new THREE.BoxGeometry(.25, .12, .08), headlightMat);
+        h.position.set(x, .86, model.bodyScale.z / 2 + 0.08);
+        group.add(h);
+      });
+
+      const wheelGeo = new THREE.CylinderGeometry(model.wheelRadius, model.wheelRadius, .32, 18);
+      const wheelMat = new THREE.MeshLambertMaterial({ color: 0x101010 });
+      [[-.8, 1.3], [.8, 1.3], [-.8, -1.3], [.8, -1.3]].forEach(([x, z]) => {
+        const w = new THREE.Mesh(wheelGeo, wheelMat);
+        w.rotation.z = Math.PI / 2;
+        w.position.set(x, model.wheelRadius, z);
+        group.add(w);
+      });
+
+      group.position.set(lanePositions[STATE.lane], 0, 6);
+      world.add(group);
+      playerCar = group;
+      document.getElementById('car-name-badge').textContent = model.name;
+    }
+
+    function spawnDecor(z, tint) {
+      const side = Math.random() > .5 ? 1 : -1;
+      const x = side * (10 + Math.random() * 6);
+      const choice = Math.random();
+      const g = new THREE.Group();
+
+      if (choice < .22) {
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(.08, .08, 3.6, 8), new THREE.MeshLambertMaterial({ color: 0x777777 }));
+        pole.position.y = 1.8;
+        g.add(pole);
+        const board = new THREE.Mesh(new THREE.BoxGeometry(1.7, .9, .08), new THREE.MeshLambertMaterial({ color: tint }));
+        board.position.y = 3.1;
+        g.add(board);
+      } else if (choice < .46) {
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.14, .2, 3.8, 8), new THREE.MeshLambertMaterial({ color: 0x8b5a2b }));
+        trunk.position.y = 1.9;
+        g.add(trunk);
+        const leaves = new THREE.Mesh(new THREE.SphereGeometry(1.2, 10, 8), new THREE.MeshLambertMaterial({ color: 0x2e7d32 }));
+        leaves.position.y = 4.2;
+        leaves.scale.set(1.2, .65, 1);
+        g.add(leaves);
+      } else if (choice < .72) {
+        const base = new THREE.Mesh(new THREE.BoxGeometry(3.2, 2.6, 3), new THREE.MeshLambertMaterial({ color: [0xffd166, 0xf4978e, 0x8ecae6, 0xcaffbf][Math.floor(Math.random()*4)] }));
+        base.position.y = 1.3;
+        g.add(base);
+        const roof = new THREE.Mesh(new THREE.ConeGeometry(2.3, 1.4, 4), new THREE.MeshLambertMaterial({ color: 0x8d5524 }));
+        roof.position.y = 3.2;
+        roof.rotation.y = Math.PI / 4;
+        g.add(roof);
+      } else if (choice < .88) {
+        const van = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.7, 4.4), new THREE.MeshLambertMaterial({ color: 0xd21034 }));
+        van.position.y = .95;
+        g.add(van);
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(2.45, .2, 4.45), new THREE.MeshLambertMaterial({ color: 0x00209f }));
+        stripe.position.y = .45;
+        g.add(stripe);
+      } else {
+        const flagPole = new THREE.Mesh(new THREE.CylinderGeometry(.06, .06, 4.4, 8), new THREE.MeshLambertMaterial({ color: 0xc7c7c7 }));
+        flagPole.position.y = 2.2;
+        g.add(flagPole);
+        const blue = new THREE.Mesh(new THREE.BoxGeometry(1.2, .7, .02), new THREE.MeshLambertMaterial({ color: 0x00209f }));
+        blue.position.set(.62, 2.7, 0);
+        g.add(blue);
+        const red = new THREE.Mesh(new THREE.BoxGeometry(1.2, .7, .02), new THREE.MeshLambertMaterial({ color: 0xd21034 }));
+        red.position.set(.62, 2.0, 0);
+        g.add(red);
+      }
+
+      g.position.set(x, 0, z);
+      world.add(g);
+      decoObjects.push(g);
+    }
+
+    function createObstacle() {
+      const lane = Math.floor(Math.random() * 4);
+      const typeRoll = Math.random();
+      const g = new THREE.Group();
+
+      if (typeRoll < .45) {
+        const car = new THREE.Mesh(new THREE.BoxGeometry(2.1, .85, 4.4), new THREE.MeshLambertMaterial({ color: [0x1d4ed8, 0xdc2626, 0xeab308, 0x16a34a][Math.floor(Math.random()*4)] }));
+        car.position.y = .8;
+        g.add(car);
+      } else if (typeRoll < .7) {
+        const truck = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.8, 5.4), new THREE.MeshLambertMaterial({ color: 0x64748b }));
+        truck.position.y = 1.0;
+        g.add(truck);
+      } else {
+        const stall = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.5, 1.9), new THREE.MeshLambertMaterial({ color: 0xfb8500 }));
+        stall.position.y = .76;
+        g.add(stall);
+      }
+
+      g.position.set(lanePositions[lane], 0, -120);
+      g.userData = { lane, speed: 7 + Math.random() * 2.5, kind: 'obstacle' };
+      world.add(g);
+      obstacles.push(g);
+    }
+
+    function createCoin() {
+      const lane = Math.floor(Math.random() * 4);
+      const c = new THREE.Mesh(
+        new THREE.CylinderGeometry(.35, .35, .08, 18),
+        new THREE.MeshLambertMaterial({ color: 0xffd54a, emissive: 0xffd54a, emissiveIntensity: .35 })
+      );
+      c.rotation.x = Math.PI / 2;
+      c.position.set(lanePositions[lane], 1.1, -120);
+      c.userData = { kind: 'coin' };
+      world.add(c);
+      coins.push(c);
+    }
+
+    let obstacleTimer = 0;
+    let coinTimer = 0;
+    let lastTime = 0;
+
+    function resetGame() {
+      STATE.running = true;
+      STATE.paused = false;
+      STATE.over = false;
+      STATE.coins = 0;
+      STATE.distance = 0;
+      STATE.speed = 10;
+      STATE.fuel = 100;
+      STATE.lane = 1;
+      STATE.targetX = lanePositions[1];
+      obstacleTimer = 0;
+      coinTimer = 0;
+      buildWorld();
+      ui.hud.classList.remove('hidden');
+      showScreen(null);
+    }
+
+    function updateHUD() {
+      document.getElementById('coins-ui').textContent = STATE.coins;
+      document.getElementById('distance-ui').textContent = Math.floor(STATE.distance) + 'm';
+      document.getElementById('speed-ui').textContent = Math.floor(STATE.speed * 10);
+      document.getElementById('fuel-ui').style.width = STATE.fuel + '%';
+      document.getElementById('fuel-ui').style.background = STATE.fuel < 25
+        ? 'linear-gradient(90deg,#ef4444,#f97316)'
+        : 'linear-gradient(90deg,#00c853,#b2ff59)';
+    }
+
+    function toast(text) {
+      ui.toast.textContent = text;
+      ui.toast.classList.add('show');
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => ui.toast.classList.remove('show'), 900);
+    }
+
+    function endGame() {
+      STATE.running = false;
+      STATE.over = true;
+      const score = Math.floor(STATE.distance) + STATE.coins * 50;
+      STATE.best = Math.max(STATE.best, score);
+      localStorage.setItem('ttrh_pro_best', STATE.best);
+      document.getElementById('go-distance').textContent = Math.floor(STATE.distance);
+      document.getElementById('go-coins').textContent = STATE.coins;
+      document.getElementById('go-score').textContent = score;
+      document.getElementById('go-best').textContent = STATE.best;
+      ui.hud.classList.add('hidden');
+      showScreen('gameover-screen');
+    }
+
+    function loop(t) {
+      requestAnimationFrame(loop);
+      const dt = Math.min((t - lastTime) / 1000 || 0, 0.05);
+      lastTime = t;
+
+      if (STATE.running && !STATE.paused && !STATE.over) {
+        STATE.speed = Math.min(STATE.speed + dt * 0.5, 18);
+        STATE.distance += STATE.speed * dt * 2.3;
+        STATE.fuel = Math.max(0, STATE.fuel - dt * 3.2);
+
+        const target = lanePositions[STATE.lane];
+        playerCar.position.x += (target - playerCar.position.x) * 0.12;
+        playerCar.rotation.z = (target - playerCar.position.x) * -0.04;
+        playerCar.position.y = Math.sin(t * 0.01) * 0.03;
+
+        roadPieces.forEach(piece => {
+          piece.position.z += STATE.speed * dt * 7;
+          if (piece.position.z > 60) piece.position.z -= 480;
+        });
+
+        decoObjects.forEach((obj, i) => {
+          obj.position.z += STATE.speed * dt * 7;
+          if (obj.position.z > 40) {
+            world.remove(obj);
+            decoObjects.splice(i, 1);
+            spawnDecor(-260 - Math.random() * 80, STATE.environment === 'pap' ? 0xd21034 : STATE.environment === 'petion' ? 0x00209f : 0xf97316);
+          }
+        });
+
+        obstacleTimer += dt;
+        coinTimer += dt;
+        if (obstacleTimer > 1.1) { createObstacle(); obstacleTimer = 0; }
+        if (coinTimer > 0.55) { createCoin(); coinTimer = 0; }
+
+        obstacles.forEach((o, i) => {
+          o.position.z += STATE.speed * dt * 7;
+          if (o.position.z > 24) {
+            world.remove(o);
+            obstacles.splice(i, 1);
+          }
+        });
+
+        coins.forEach((c, i) => {
+          c.position.z += STATE.speed * dt * 7;
+          c.rotation.y += dt * 7;
+          if (c.position.z > 24) {
+            world.remove(c);
+            coins.splice(i, 1);
+          }
+        });
+
+        for (let i = obstacles.length - 1; i >= 0; i--) {
+          const o = obstacles[i];
+          if (Math.abs(o.position.x - playerCar.position.x) < 1.8 && Math.abs(o.position.z - playerCar.position.z) < 3.2) {
+            toast('Crash!');
+            endGame();
+            break;
+          }
+        }
+
+        for (let i = coins.length - 1; i >= 0; i--) {
+          const c = coins[i];
+          if (Math.abs(c.position.x - playerCar.position.x) < 1.3 && Math.abs(c.position.z - playerCar.position.z) < 2) {
+            STATE.coins += 1;
+            world.remove(c);
+            coins.splice(i, 1);
+            toast('+1 pyès');
+          }
+        }
+
+        if (STATE.fuel <= 0) {
+          toast('Gaz fini');
+          endGame();
+        }
+
+        camera.position.lerp(new THREE.Vector3(playerCar.position.x, 4.9, 13), 0.08);
+        camera.lookAt(new THREE.Vector3(playerCar.position.x, 0.9, -8));
+        updateHUD();
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    requestAnimationFrame(loop);
+
+    function goBack(targetId) {
+      ui.hud.classList.add('hidden');
+      showScreen(targetId);
+    }
+
+    document.getElementById('play-btn').onclick = resetGame;
+    document.getElementById('garage-btn').onclick = () => showScreen('garage-screen');
+    document.getElementById('about-btn').onclick = () => showScreen('about-screen');
+    document.getElementById('save-play-btn').onclick = resetGame;
+
+    document.querySelectorAll('[data-back]').forEach(btn => {
+      btn.onclick = () => goBack(btn.dataset.back);
+    });
+
+    document.getElementById('pause-btn').onclick = () => {
+      if (!STATE.running) return;
+      STATE.paused = true;
+      showScreen('pause-screen');
+    };
+
+    document.getElementById('resume-btn').onclick = () => {
+      STATE.paused = false;
+      showScreen(null);
+    };
+
+    document.getElementById('restart-btn').onclick = resetGame;
+    document.getElementById('quit-btn').onclick = () => {
+      STATE.running = false;
+      ui.hud.classList.add('hidden');
+      showScreen('landing-screen');
+    };
+
+    document.getElementById('again-btn').onclick = resetGame;
+    document.getElementById('menu-btn').onclick = () => showScreen('landing-screen');
+
+    window.addEventListener('keydown', e => {
+      if ((e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') && STATE.lane > 0) STATE.lane--;
+      if ((e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') && STATE.lane < 3) STATE.lane++;
+      if (e.key === 'Escape' && STATE.running && !STATE.over) {
+        STATE.paused = !STATE.paused;
+        showScreen(STATE.paused ? 'pause-screen' : null);
+      }
+    });
+
+    let touchStartX = 0;
+    window.addEventListener('touchstart', e => touchStartX = e.changedTouches[0].clientX, { passive: true });
+    window.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (dx < -30 && STATE.lane > 0) STATE.lane--;
+      if (dx > 30 && STATE.lane < 3) STATE.lane++;
+    }, { passive: true });
+
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    });
+  </script>
+</body>
+</html>
